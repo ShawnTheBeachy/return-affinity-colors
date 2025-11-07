@@ -10,6 +10,7 @@
     <PackageReference Include="Crayon" Version="2.0.69" />
     <PackageReference Include="dnlib" Version="4.5.0" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.10" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-rc.2.25502.107" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="res\*.resources" />
