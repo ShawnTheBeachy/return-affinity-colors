@@ -4,7 +4,7 @@ This application modifies the `Serif.Affinity.dll` file to return colored tool i
 NOTE: This tool has only been tested on Windows. It runs on .NET 9, so it should be able to run on Linux and macOS. However, I'm not familiar with how Affinity is compiled on those platforms and I don't have either one to test on. You are free to compile it yourself and give it a try.
 
 # How to use it
-Download the [`latest release`](https://github.com/ShawnTheBeachy/return-affinity-colors/releases/latest) and run the program with an administrator terminal. The program will automatically for an existing installation path for Affinity, if one is found it will automatically patch the library in the detected path by default.
+Download the [`latest release`](https://github.com/ShawnTheBeachy/return-affinity-colors/releases/latest) and run the program with an administrator terminal. The program will automatically look for an existing installation path for Affinity, if one is found it will automatically patch the library in the detected path by default.
 
 From the command prompt, run `rafcol <command> "<installation-path>"`. If you installed Affinity using the EXE and the default settings, the installation path is probably `C:\Program Files\Affinity\Affinity`. If you used the MSIX, the installation path is probably something like `C:\Program Files\WindowsApps\Canva.Affinity_3.0.0.3791_x64__8a0j1tnjnt4a4\App`. So, for example, if you used the EXE your command would be `rafcol "C:\Program Files\Affinity\Affinity"`.
 
