@@ -10,6 +10,9 @@ From the command prompt, run `rafcol <command> "<installation-path>"`. If you in
 
 NOTE: If you installed Affinity using the MSIX you may need to take ownership of the `App` folder and give the `Administrators` group full control permissions before this tool can work.
 
+NOTE: When Affinity updates it is likely that the program files will get overwritten with updated versions. You should be
+able to simply run the tool again to return your customizations.
+
 ## Check write access
 To check if you have write access to the Affinity installation folder, run `rafcol check "<installation-path>"`.
 
@@ -18,12 +21,13 @@ To replace the monochrome icons with colored icons, run `rafcol colorize "<insta
 
 The tool will run and output a list of all the resources it replaced. A few new tools, such as the adjustment brush and filter brush, will not be replaced since they did not exist in v2.
 
-NOTE: When Affinity updates it is likely that `Serif.Affinity.dll` will get overwritten with an updated version. You should be able to simply run the tool again to return the colored icons.
+## Use custom icons
+To dump the default icons, run `rafcol dump icons "<installation-path>" -o "<output-directory>"`. All the Affinity icon resources will be dumped to the specified folder. You can then modify the default icons.
+
+To import your custom icons, run `rafcol import icons "<installation-path>" -i "<input-directory>"`, where `<input-directory>` is the directory into which you dumped the default icons. This will import your custom icons into Affinity. If an icon does not exist in this folder, the tool will keep the default Affinity icon; only the icons which you want to update need to be in this folder. Note that you must preserve the folder/file structure used in the `dump icons` command in order for the import to work. 
 
 ## Replace the splash screen image
 To replace the splash screen image, run `rafcol splash "<installation-path>" --img "<splash-image-path>"`. This will create a backup of your current `Affinity.exe` file before updating it. By default this backup will be placed in the folder from which you are running the command prompt. To change the backup location, pass the `--backup "<path>"` option. If anything goes wrong, you can revert to the default EXE by deleting the modified `Affinity.exe` and renaming `Affinity.exe.bak` to `Affinity.exe`.
-
-NOTE: When Affinity updates it is likely that `Affinity.exe` will get overwritten with an updated version. You should be able to simply run the tool again to return the custom splash screen.
 
 # How it works
 The icons and splash screen image which Affinity uses are embedded as resources inside the `Serif.Affinity.dll` and `Affinity.exe` files. This tool loads the DLL or EXE file, reads those resources, and replaces them with the matching v2 resources or your custom splash screen.
