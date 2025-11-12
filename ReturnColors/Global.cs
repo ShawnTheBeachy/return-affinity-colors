@@ -37,6 +37,13 @@ internal static class Global
         },
     };
 
+    public static readonly Option<bool> TerminateOption = new("--terminate", "-t")
+    {
+        Arity = ArgumentArity.ZeroOrOne,
+        DefaultValueFactory = _ => false,
+        Description = "Force closes Affinity if it is running.",
+    };
+
     private static string? GetAffinityInstallationPath()
     {
         if (!OperatingSystem.IsWindows())
@@ -53,11 +60,4 @@ internal static class Global
         foreach (var process in affinityProcesses)
             process.Kill();
     }
-
-    public static readonly Option<bool> TerminateOption = new("--terminate", "-t")
-    {
-        Arity = ArgumentArity.ZeroOrOne,
-        DefaultValueFactory = _ => false,
-        Description = "Checks if Affinity is running, force closes the application if used.",
-    };
 }
