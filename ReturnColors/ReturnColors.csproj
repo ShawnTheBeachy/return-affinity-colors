@@ -5,6 +5,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <BaseOutputPath>..\bin</BaseOutputPath>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <AssemblyTitle>Return Affinity Colors</AssemblyTitle>
+    <Authors>Shawn Beachy</Authors>
+    <Product>$(AssemblyName)</Product>
+    <PackageId>$(AssemblyName)</PackageId>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Crayon" Version="2.0.69" />
@@ -14,5 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="res\*.resources" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="icon.ico" />
   </ItemGroup>
 </Project>

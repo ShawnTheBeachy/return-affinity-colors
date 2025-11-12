@@ -17,6 +17,7 @@ internal static class ReplaceSplashImageCommand
 
             _command = new Command("splash", "Replace the Affinity startup splash image.");
             _command.Arguments.Add(Global.DirectoryArgument);
+            _command.Options.Add(Global.TerminateOption);
             _command.Options.Add(Options.BackupOption);
             _command.Options.Add(Options.SplashImageOption);
             _command.SetAction(Execute);
@@ -38,6 +39,9 @@ internal static class ReplaceSplashImageCommand
     {
         if (!CheckCommand.Execute(parseResult))
             return;
+
+        if (parseResult.GetValue(Global.TerminateOption))
+            Global.TerminateAffinity();
 
         var directory = parseResult.GetValue(Global.DirectoryArgument)!;
         var exePath = Path.Combine(directory.FullName, "Affinity.exe");

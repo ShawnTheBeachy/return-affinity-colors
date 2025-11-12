@@ -22,6 +22,7 @@ internal static class ColorizeIconsCommand
                 "Replace the Affinity monochrome icons with the v2 colored icons."
             );
             _command.Arguments.Add(Global.DirectoryArgument);
+            _command.Options.Add(Global.TerminateOption);
             _command.Options.Add(Options.BackupOption);
             _command.SetAction(Execute);
             return _command;
@@ -46,6 +47,9 @@ internal static class ColorizeIconsCommand
         if (!CheckCommand.Execute(parseResult))
             return;
 
+        if (parseResult.GetValue(Global.TerminateOption))
+            Global.TerminateAffinity();
+
         var directory = parseResult.GetValue(Global.DirectoryArgument)!;
         var dllPath = Path.Combine(directory.FullName, "Serif.Affinity.dll");
         var backup = parseResult.GetValue(Options.BackupOption);
@@ -58,8 +62,9 @@ internal static class ColorizeIconsCommand
             return;
         }
 
+        byte[] dllBytes = System.IO.File.ReadAllBytes(dllPath);
         using var module = ModuleDefMD.Load(
-            dllPath,
+            dllBytes,
             new ModuleCreationOptions(ModuleDef.CreateModuleContext())
         );
         var resourcesTempFile = Path.Combine(AppContext.BaseDirectory, Path.GetRandomFileName());

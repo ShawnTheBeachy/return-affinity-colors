@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using ReturnColors;
 using ReturnColors.Commands;
 
 var rootCommand = new RootCommand("Application for customizing Affinity.");
