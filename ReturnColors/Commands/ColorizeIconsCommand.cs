@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using System.Resources;
 using dnlib.DotNet;
 using dnlib.DotNet.Writer;
@@ -9,42 +10,25 @@ namespace ReturnColors.Commands;
 
 internal static class ColorizeIconsCommand
 {
-    private static Command? _command;
+    [field: AllowNull, MaybeNull]
     public static Command Command
     {
         get
         {
-            if (_command is not null)
-                return _command;
+            if (field is not null)
+                return field;
 
-            _command = new Command(
+            field = new Command(
                 "colorize",
                 "Replace the Affinity monochrome icons with the v2 colored icons."
             );
-            _command.Arguments.Add(Global.DirectoryArgument);
-            _command.Options.Add(Global.TerminateOption);
-            _command.Options.Add(Options.BackupOption);
-            _command.Options.Add(Options.PauseOption);
-            _command.SetAction(Execute);
-            return _command;
+            field.Arguments.Add(Global.DirectoryArgument);
+            field.Options.Add(Global.TerminateOption);
+            field.Options.Add(Options.BackupOption);
+            field.Options.Add(Options.PauseOption);
+            field.SetAction(Execute);
+            return field;
         }
-    }
-
-    private static bool BackUpDll(FileInfo dll, DirectoryInfo directory, bool pause)
-    {
-        if (!CheckCommand.Execute(directory))
-            return false;
-
-        var dllBackup = dll.CopyTo(
-            Path.Combine(directory.FullName, "Serif.Affinity.dll.bak"),
-            true
-        );
-        Console.WriteLine($"Backed up \"{dll.FullName}\" to \"{dllBackup.FullName}\".");
-
-        if (pause)
-            Pause();
-
-        return true;
     }
 
     private static async Task Execute(ParseResult parseResult, CancellationToken cancellationToken)
@@ -60,11 +44,9 @@ internal static class ColorizeIconsCommand
         var dllPath = Path.Combine(directory.FullName, "Serif.Affinity.dll");
         var backup = parseResult.GetValue(Options.BackupOption);
 
-        if (backup is not null && !BackUpDll(new FileInfo(dllPath), backup, pause))
+        if (backup is not null && !new FileInfo(dllPath).BackUp(backup, pause))
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Failed to back up current Serif.Affinity.dll.");
-            Console.ResetColor();
+            Console.RedLine("Failed to back up current Serif.Affinity.dll.");
             return;
         }
 
@@ -78,7 +60,7 @@ internal static class ColorizeIconsCommand
         await ReplaceResources(module, resourcesTempFile);
 
         if (pause)
-            Pause();
+            Global.Pause();
 
         SaveDll(module, dllPath);
         File.Delete(resourcesTempFile);
@@ -92,9 +74,7 @@ internal static class ColorizeIconsCommand
             if (v2Entry.Key.ToString() == v2Key)
                 return v2Entry.Value;
 
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine($"Failed to resolve v2 resource \"{key}\".");
-        Console.ResetColor();
+        Console.YellowLine($"Failed to resolve v2 resource \"{key}\".");
         return null;
     }
 
@@ -178,28 +158,18 @@ internal static class ColorizeIconsCommand
             {
                 var v2Resource = FindV2Resource(key, v2ResourceReader);
                 mergedResourcesWriter.AddResource(key, v2Resource ?? v3Entry.Value);
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"Merged v2 resource \"{key}\".");
-                Console.ResetColor();
+                Console.GreenLine($"Merged v2 resource \"{key}\".");
             }
             catch (Exception exception)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Failed to merge v2 resource \"{key}\".");
-                Console.WriteLine(exception.Message);
-                Console.ResetColor();
+                Console.RedLine($"Failed to merge v2 resource \"{key}\".");
+                Console.RedLine(exception.Message);
                 mergedResourcesWriter.AddResource(key, v3Entry.Value);
             }
         }
 
         mergedResourcesWriter.Dispose();
         disposables.Dispose();
-    }
-
-    private static void Pause()
-    {
-        Console.WriteLine("Press any key to continue...");
-        _ = Console.ReadKey();
     }
 
     private static async ValueTask ReplaceResources(ModuleDefMD module, string resourcesFile)

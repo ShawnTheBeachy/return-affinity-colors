@@ -1,24 +1,25 @@
 ﻿using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ReturnColors.Commands;
 
 internal static class CheckCommand
 {
-    private static Command? _command;
+    [field: AllowNull, MaybeNull]
     public static Command Command
     {
         get
         {
-            if (_command is not null)
-                return _command;
+            if (field is not null)
+                return field;
 
-            _command = new Command(
+            field = new Command(
                 "check",
                 "Check whether this tool has access to the Affinity installation directory."
             );
-            _command.Arguments.Add(Global.DirectoryArgument);
-            _command.SetAction(x => Execute(x));
-            return _command;
+            field.Arguments.Add(Global.DirectoryArgument);
+            field.SetAction(x => Execute(x));
+            return field;
         }
     }
 
@@ -31,23 +32,18 @@ internal static class CheckCommand
         {
             var tempFile = Path.Combine(directory.FullName, Path.GetRandomFileName());
             using var _ = File.Create(tempFile, 1, FileOptions.DeleteOnClose);
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"You have write access to \"{directory.FullName}\".");
-            Console.ResetColor();
+            Console.GreenLine($"You have write access to \"{directory.FullName}\".");
             return true;
         }
         catch (UnauthorizedAccessException)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"You do not have write access to \"{directory.FullName}\".");
+            Console.RedLine($"You do not have write access to \"{directory.FullName}\".");
         }
         catch (IOException)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"Failed to write to \"{directory.FullName}\"");
+            Console.RedLine($"Failed to write to \"{directory.FullName}\"");
         }
 
-        Console.ResetColor();
         return false;
     }
 }

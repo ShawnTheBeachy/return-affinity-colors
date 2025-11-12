@@ -53,6 +53,12 @@ internal static class Global
         return (string?)affinityKey?.GetValue("Affinity Install Path");
     }
 
+    public static void Pause()
+    {
+        Console.WriteLine("Press any key to continue...");
+        _ = Console.ReadKey();
+    }
+
     public static void TerminateAffinity()
     {
         var affinityProcesses = Process.GetProcessesByName("Affinity");

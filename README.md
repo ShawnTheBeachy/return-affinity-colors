@@ -1,7 +1,7 @@
 # Return Affinity Colors
 This application modifies the `Serif.Affinity.dll` file to return colored tool icons for Affinity v3.
 
-NOTE: This tool has only been tested on Windows. It runs on .NET 9, so it should be able to run on Linux and macOS. However, I'm not familiar with how Affinity is compiled on those platforms and I don't have either one to test on. You are free to compile it yourself and give it a try.
+NOTE: This tool has only been tested on Windows. It runs on .NET 10, so it should be able to run on Linux and macOS. However, I'm not familiar with how Affinity is compiled on those platforms and I don't have either one to test on. You are free to compile it yourself and give it a try.
 
 # How to use it
 Download the [`latest release`](https://github.com/ShawnTheBeachy/return-affinity-colors/releases/latest) and run the program with an administrator terminal. The program will automatically look for an existing installation path for Affinity, if one is found it will automatically patch the library in the detected path by default.

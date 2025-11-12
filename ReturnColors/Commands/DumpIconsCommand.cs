@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using System.Resources;
 using dnlib.DotNet;
 
@@ -7,19 +8,18 @@ namespace ReturnColors.Commands;
 
 internal static class DumpIconsCommand
 {
-    private static Command? _command;
+    [field: AllowNull, MaybeNull]
     public static Command Command
     {
         get
         {
-            if (_command is not null)
-                return _command;
+            if (field is not null)
+                return field;
 
-            _command = new Command("icons", "Dump the Affinity icon resources to a folder.");
-            _command.Arguments.Add(Global.DirectoryArgument);
-            _command.Options.Add(DumpCommand.Options.OutputDirectoryOption);
-            _command.SetAction(Execute);
-            return _command;
+            field = new Command("icons", "Dump the Affinity icon resources to a folder.");
+            field.Arguments.Add(Global.DirectoryArgument);
+            field.SetAction(Execute);
+            return field;
         }
     }
 
@@ -51,6 +51,8 @@ internal static class DumpIconsCommand
                 .DisposeWith(disposables)
         );
 
+        var dumpedResourceCount = 0;
+
         foreach (DictionaryEntry entry in resourceReader)
         {
             var key = entry.Key.ToString() ?? "";
@@ -71,8 +73,10 @@ internal static class DumpIconsCommand
             await resourceStream.CopyToAsync(ms, cancellationToken);
             ms.Seek(0, SeekOrigin.Begin);
             await fs.WriteAsync(ms.ToArray(), cancellationToken);
+            dumpedResourceCount++;
         }
 
+        Console.WriteLine($"Dumped {dumpedResourceCount} resources.");
         disposables.Dispose();
     }
 }

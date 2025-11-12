@@ -1,22 +1,23 @@
 ﻿using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ReturnColors.Commands;
 
 internal static class DumpCommand
 {
-    private static Command? _command;
+    [field: AllowNull, MaybeNull]
     public static Command Command
     {
         get
         {
-            if (_command is not null)
-                return _command;
+            if (field is not null)
+                return field;
 
-            _command = new Command("dump", "Dump Affinity resources to a folder.");
-            _command.Arguments.Add(Global.DirectoryArgument);
-            _command.Options.Add(Options.OutputDirectoryOption);
-            _command.Subcommands.Add(DumpIconsCommand.Command);
-            return _command;
+            field = new Command("dump", "Dump Affinity resources to a folder.");
+            field.Arguments.Add(Global.DirectoryArgument);
+            field.Options.Add(Options.OutputDirectoryOption);
+            field.Subcommands.Add(DumpIconsCommand.Command);
+            return field;
         }
     }
 
@@ -27,7 +28,7 @@ internal static class DumpCommand
             DefaultValueFactory = _ => new DirectoryInfo(
                 Path.Combine(AppContext.BaseDirectory, "icons")
             ),
-            Description = "The directory into which to dump the icons.",
+            Description = "The directory into which to dump the resources.",
             Recursive = true,
             Required = true,
         };

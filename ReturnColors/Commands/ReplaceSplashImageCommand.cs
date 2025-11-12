@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using System.Resources;
 using dnlib.DotNet;
 
@@ -7,32 +8,22 @@ namespace ReturnColors.Commands;
 
 internal static class ReplaceSplashImageCommand
 {
-    private static Command? _command;
+    [field: AllowNull, MaybeNull]
     public static Command Command
     {
         get
         {
-            if (_command is not null)
-                return _command;
+            if (field is not null)
+                return field;
 
-            _command = new Command("splash", "Replace the Affinity startup splash image.");
-            _command.Arguments.Add(Global.DirectoryArgument);
-            _command.Options.Add(Global.TerminateOption);
-            _command.Options.Add(Options.BackupOption);
-            _command.Options.Add(Options.SplashImageOption);
-            _command.SetAction(Execute);
-            return _command;
+            field = new Command("splash", "Replace the Affinity startup splash image.");
+            field.Arguments.Add(Global.DirectoryArgument);
+            field.Options.Add(Global.TerminateOption);
+            field.Options.Add(Options.BackupOption);
+            field.Options.Add(Options.SplashImageOption);
+            field.SetAction(Execute);
+            return field;
         }
-    }
-
-    private static bool BackUpExe(FileInfo exe, DirectoryInfo directory)
-    {
-        if (!CheckCommand.Execute(directory))
-            return false;
-
-        var exeBackup = exe.CopyTo(Path.Combine(directory.FullName, "Affinity.exe.bak"), true);
-        Console.WriteLine($"Backed up \"{exe.FullName}\" to \"{exeBackup.FullName}\".");
-        return true;
     }
 
     private static async Task Execute(ParseResult parseResult, CancellationToken cancellationToken)
@@ -47,16 +38,13 @@ internal static class ReplaceSplashImageCommand
         var exePath = Path.Combine(directory.FullName, "Affinity.exe");
         var backup = parseResult.GetValue(Options.BackupOption);
 
-        if (backup is not null && !BackUpExe(new FileInfo(exePath), backup))
+        if (backup is not null && !new FileInfo(exePath).BackUp(backup))
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Failed to back up current Affinity.exe.");
-            Console.ResetColor();
+            Console.RedLine("Failed to back up current Affinity.exe.");
             return;
         }
 
         var splashImage = parseResult.GetRequiredValue(Options.SplashImageOption);
-        Disposables disposables = [];
         using var module = ModuleDefMD.Load(
             exePath,
             new ModuleCreationOptions(ModuleDef.CreateModuleContext())
@@ -80,8 +68,8 @@ internal static class ReplaceSplashImageCommand
             await using var fs = new FileStream(splashImage.FullName, FileMode.Open);
             var buffer = new byte[fs.Length];
             await fs.ReadExactlyAsync(buffer, 0, (int)fs.Length, cancellationToken);
-            var ms = new MemoryStream(buffer, false).DisposeWith(disposables);
-            resourceWriter.AddResource(key, ms);
+            var ms = new MemoryStream(buffer, false);
+            resourceWriter.AddResource(key, ms, true);
         }
 
         resourceWriter.Dispose();
@@ -97,7 +85,6 @@ internal static class ReplaceSplashImageCommand
         module.Resources[resourceIndex] = newResource;
         File.Delete(exePath);
         module.Write(exePath);
-        disposables.Dispose();
         await mergedResourcesFs.DisposeAsync();
         File.Delete(resourcesTempFile);
         Console.WriteLine(
