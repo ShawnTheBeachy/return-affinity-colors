@@ -24,12 +24,13 @@ internal static class ColorizeIconsCommand
             _command.Arguments.Add(Global.DirectoryArgument);
             _command.Options.Add(Global.TerminateOption);
             _command.Options.Add(Options.BackupOption);
+            _command.Options.Add(Options.PauseOption);
             _command.SetAction(Execute);
             return _command;
         }
     }
 
-    private static bool BackUpDll(FileInfo dll, DirectoryInfo directory)
+    private static bool BackUpDll(FileInfo dll, DirectoryInfo directory, bool pause)
     {
         if (!CheckCommand.Execute(directory))
             return false;
@@ -39,6 +40,10 @@ internal static class ColorizeIconsCommand
             true
         );
         Console.WriteLine($"Backed up \"{dll.FullName}\" to \"{dllBackup.FullName}\".");
+
+        if (pause)
+            Pause();
+
         return true;
     }
 
@@ -50,11 +55,12 @@ internal static class ColorizeIconsCommand
         if (parseResult.GetValue(Global.TerminateOption))
             Global.TerminateAffinity();
 
+        var pause = parseResult.GetValue(Options.PauseOption);
         var directory = parseResult.GetValue(Global.DirectoryArgument)!;
         var dllPath = Path.Combine(directory.FullName, "Serif.Affinity.dll");
         var backup = parseResult.GetValue(Options.BackupOption);
 
-        if (backup is not null && !BackUpDll(new FileInfo(dllPath), backup))
+        if (backup is not null && !BackUpDll(new FileInfo(dllPath), backup, pause))
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Failed to back up current Serif.Affinity.dll.");
@@ -62,7 +68,7 @@ internal static class ColorizeIconsCommand
             return;
         }
 
-        byte[] dllBytes = System.IO.File.ReadAllBytes(dllPath);
+        var dllBytes = await File.ReadAllBytesAsync(dllPath, cancellationToken);
         using var module = ModuleDefMD.Load(
             dllBytes,
             new ModuleCreationOptions(ModuleDef.CreateModuleContext())
@@ -70,6 +76,10 @@ internal static class ColorizeIconsCommand
         var resourcesTempFile = Path.Combine(AppContext.BaseDirectory, Path.GetRandomFileName());
         MergeResources(module, resourcesTempFile);
         await ReplaceResources(module, resourcesTempFile);
+
+        if (pause)
+            Pause();
+
         SaveDll(module, dllPath);
         File.Delete(resourcesTempFile);
     }
@@ -186,6 +196,12 @@ internal static class ColorizeIconsCommand
         disposables.Dispose();
     }
 
+    private static void Pause()
+    {
+        Console.WriteLine("Press any key to continue...");
+        _ = Console.ReadKey();
+    }
+
     private static async ValueTask ReplaceResources(ModuleDefMD module, string resourcesFile)
     {
         var resourceIndex = module.Resources.IndexOf("Serif.Affinity.g.resources");
@@ -232,6 +248,11 @@ internal static class ColorizeIconsCommand
                         result.AddError($"\"{directory.FullName}\" does not exist.");
                 },
             },
+        };
+        public static readonly Option<bool> PauseOption = new("--pause", "-p")
+        {
+            DefaultValueFactory = _ => false,
+            Description = "Pause between each step of the process and wait for user input.",
         };
     }
 }

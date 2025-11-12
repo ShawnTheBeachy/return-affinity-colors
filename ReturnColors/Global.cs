@@ -1,59 +1,59 @@
-﻿using Microsoft.Win32;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.Diagnostics;
-namespace ReturnColors.Commands;
+using Microsoft.Win32;
+
+namespace ReturnColors;
 
 internal static class Global
 {
-    public static string? ParseAffinityKey() {
-        if (!OperatingSystem.IsWindows()) {
-            return null;
-        }
-        RegistryKey? RegKeyMaybe = Registry.LocalMachine.OpenSubKey("Software\\Serif\\Affinity\\Affinity");
-        if (RegKeyMaybe == null)
-        {
-            return null;
-        }
-        RegistryKey RegKey = RegKeyMaybe;
-        return (string?)RegKey.GetValue("Affinity Install Path");
-    }
-
     public static readonly Argument<DirectoryInfo> DirectoryArgument = new("dir")
     {
-        DefaultValueFactory = result => {
-            var affinityPath = ParseAffinityKey();
-            if (affinityPath == null)
-            {
-                result.AddError("No existing Affinity installation path was found.\nYou must manually specify the installation path.");
-                return null;
-            }
-            return new DirectoryInfo(affinityPath);
+        DefaultValueFactory = result =>
+        {
+            var affinityPath = GetAffinityInstallationPath();
+
+            if (affinityPath is not null)
+                return new DirectoryInfo(affinityPath);
+
+            result.AddError(
+                "No existing Affinity installation path was found.\nYou must manually specify the installation path."
+            );
+            return null!;
         },
         Description = "The directory where Affinity is installed.",
         Validators =
         {
             result =>
             {
-                DirectoryInfo directory;
-
-                try {
-                    directory = result.GetValueOrDefault<DirectoryInfo>();
+                try
+                {
+                    var directory = result.GetValueOrDefault<DirectoryInfo>();
 
                     if (!directory.Exists)
                         result.AddError($"\"{directory.FullName}\" does not exist.");
-                } catch (InvalidOperationException e) {
                 }
+                catch (InvalidOperationException) { }
             },
         },
     };
+
+    private static string? GetAffinityInstallationPath()
+    {
+        if (!OperatingSystem.IsWindows())
+            return null;
+
+        var affinityKey = Registry.LocalMachine.OpenSubKey(@"Software\Serif\Affinity\Affinity");
+        return (string?)affinityKey?.GetValue("Affinity Install Path");
+    }
+
     public static void TerminateAffinity()
     {
-        Process[] pname = Process.GetProcessesByName("Affinity");
-        foreach (var process in pname)
-        {
+        var affinityProcesses = Process.GetProcessesByName("Affinity");
+
+        foreach (var process in affinityProcesses)
             process.Kill();
-        }
     }
+
     public static readonly Option<bool> TerminateOption = new("--terminate", "-t")
     {
         Arity = ArgumentArity.ZeroOrOne,
