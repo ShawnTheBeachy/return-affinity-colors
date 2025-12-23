@@ -45,8 +45,9 @@ internal static class ReplaceSplashImageCommand
         }
 
         var splashImage = parseResult.GetRequiredValue(Options.SplashImageOption);
+        var exeBytes = await File.ReadAllBytesAsync(exePath, cancellationToken);
         using var module = ModuleDefMD.Load(
-            exePath,
+            exeBytes,
             new ModuleCreationOptions(ModuleDef.CreateModuleContext())
         );
         using var resourceReader = new ResourceReader(
