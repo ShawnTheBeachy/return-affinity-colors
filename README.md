@@ -29,6 +29,8 @@ To import your custom icons, run `rafcol import icons "<installation-path>" -i "
 ## Replace the splash screen image
 To replace the splash screen image, run `rafcol splash "<installation-path>" --img "<splash-image-path>"`. This will create a backup of your current `Affinity.exe` file before updating it. By default this backup will be placed in the folder from which you are running the command prompt. To change the backup location, pass the `--backup "<path>"` option. If anything goes wrong, you can revert to the default EXE by deleting the modified `Affinity.exe` and renaming `Affinity.exe.bak` to `Affinity.exe`.
 
+Your custom image should be 587x450px. You can use the `SplashLayoutRef.png` file in the root of the repository for a reference (thanks to @TheTrueCoder).
+
 # How it works
 The icons and splash screen image which Affinity uses are embedded as resources inside the `Serif.Affinity.dll` and `Affinity.exe` files. This tool loads the DLL or EXE file, reads those resources, and replaces them with the matching v2 resources or your custom splash screen.
 
